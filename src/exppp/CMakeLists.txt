@@ -34,8 +34,13 @@ if(BORLAND)
     add_definitions( -D__STDC__ )
 endif()
 
-SC_ADDLIB(libexppp "${LIBEXPPP_SOURCES}" "express;base")
+if( NOT DEFINED EMSCRIPTEN )
+  set( libexppp_link_libs "express;base" )
+endif( NOT DEFINED EMSCRIPTEN )
+
+SC_ADDLIB(libexppp "${LIBEXPPP_SOURCES}" "${libexppp_link_libs}")
 set_target_properties(libexppp PROPERTIES PREFIX "")
+add_dependencies(libexppp version_string)
 
 SC_ADDEXEC(exppp "${EXPPP_SOURCES}" "libexppp;express;base")
 

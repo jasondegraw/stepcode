@@ -112,9 +112,13 @@ SET(EXPRESS_PRIVATE_HDRS
   stack.h
   )
 
-SC_ADDLIB(express "${EXPRESS_SOURCES}" "base")
-add_dependencies(express express_verify)
-add_dependencies(express version_string)
+if( NOT DEFINED EMSCRIPTEN )
+  set( libexpress_link_libs "base" )
+endif( NOT DEFINED EMSCRIPTEN )
+
+SC_ADDLIB(express "${EXPRESS_SOURCES}" "${libexpress_link_libs}")
+add_dependencies(express express_verify version_string)
+
 SC_ADDEXEC("check-express" "${CHECK_EXPRESS_SOURCES}" "express;base" )
 
 if( SC_ENABLE_TESTING )

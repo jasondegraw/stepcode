@@ -398,30 +398,42 @@ include_directories(
   ${SC_BINARY_DIR}/include
   )
 
+ADD_SUBDIRECTORY(include)
 ADD_SUBDIRECTORY(src/base)
 ADD_SUBDIRECTORY(src/express)
 ADD_SUBDIRECTORY(src/exppp)
-ADD_SUBDIRECTORY(src/exp2cxx)
-ADD_SUBDIRECTORY(src/exp2python)
-ADD_SUBDIRECTORY(src/clstepcore)
-ADD_SUBDIRECTORY(src/cleditor)
-ADD_SUBDIRECTORY(src/cldai)
-ADD_SUBDIRECTORY(src/clutils)
-if( NOT WIN32 ) # don't build cllazyfile on windows until export/import macros are in place
-  ADD_SUBDIRECTORY( src/cllazyfile )
-endif( NOT WIN32 )
-ADD_SUBDIRECTORY(include)
-ADD_SUBDIRECTORY(data)
-IF(SC_ENABLE_TESTING)
-  ADD_SUBDIRECTORY( test )
-ENDIF(SC_ENABLE_TESTING)
-ADD_SUBDIRECTORY(doc)
+if( NOT DEFINED EMSCRIPTEN )
+  ADD_SUBDIRECTORY(src/exp2cxx)
+  ADD_SUBDIRECTORY(src/exp2python)
+  ADD_SUBDIRECTORY(src/clstepcore)
+  ADD_SUBDIRECTORY(src/cleditor)
+  ADD_SUBDIRECTORY(src/cldai)
+  ADD_SUBDIRECTORY(src/clutils)
+  if( NOT WIN32 ) # don't build cllazyfile on windows until export/import macros are in place
+    ADD_SUBDIRECTORY( src/cllazyfile )
+  endif( NOT WIN32 )
+  ADD_SUBDIRECTORY(data)
+  IF(SC_ENABLE_TESTING)
+    ADD_SUBDIRECTORY( test )
+  ENDIF(SC_ENABLE_TESTING)
+  ADD_SUBDIRECTORY(doc)
 
-if( SCHEMAS_WARNING )
-    message( "** CMake variable SC_BUILD_SCHEMAS was not set. Defaults to building ALL schemas, which will take a")
-    message("     while; see http://stepcode.org/mw/index.php?title=STEPcode_CMake_variables#SC_BUILD_SCHEMAS" )
-endif( SCHEMAS_WARNING )
-message( ".. Don't worry about any messages above about missing headers or failed tests, as long as\n    you see '-- Configuring done' below. Headers and features vary by compiler." )
+  if( SCHEMAS_WARNING )
+    message( "** CMake variable SC_BUILD_SCHEMAS was not set. Defaults to building ALL schemas, which will take a" )
+    message( "     while; see http://stepcode.org/mw/index.php?title=STEPcode_CMake_variables#SC_BUILD_SCHEMAS" )
+  endif( SCHEMAS_WARNING )
+else() #DEFINED EMSCRIPTEN
+  message( ".. Emscripten enabled, will create exppp.js" )
+  set( SC_BUILD_TYPE "Release" )
+  set( CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG" )
+  get_target_property( exppp_link exppp LINK_FLAGS )
+  if( NOT ${exppp_link} )  #if it is "exppp_link-NOTFOUND", clear it
+    set( exppp_link "" )
+  endif( NOT ${exppp_link} )
+  set_target_properties( exppp PROPERTIES LINK_FLAGS "${exppp_link} -O2 -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/exppp.js" )
+endif( NOT DEFINED EMSCRIPTEN )
+
+message( ".. Don't worry about any messages above about missing headers or failed tests, as long as\n    you see 'Configuring done' below. Headers and features vary by compiler." )
 
 # this is for testing - 'make core' builds everything that isn't generated
 add_custom_target( core )
@@ -429,7 +441,7 @@ add_dependencies( core stepdai check-express stepeditor exp2cxx )
 
 if(NOT SC_IS_SUBBUILD)
   ###############################################################################
-  # SC Packaging                                                               #
+  # SC Packaging                                                                #
   # $make package                                                               #
   ###############################################################################
 
