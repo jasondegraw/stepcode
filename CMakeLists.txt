@@ -430,7 +430,7 @@ else() #DEFINED EMSCRIPTEN
   if( NOT ${exppp_link} )  #if it is "exppp_link-NOTFOUND", clear it
     set( exppp_link "" )
   endif( NOT ${exppp_link} )
-  set_target_properties( exppp PROPERTIES LINK_FLAGS "${exppp_link} -O2 -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/exppp.js" )
+  set_target_properties( exppp PROPERTIES LINK_FLAGS "${exppp_link} -O2 -s ASM_JS=0" SUFFIX ".js" ) #-s EXPORTED_FUNCTIONS=\"['_main']\"
 endif( NOT DEFINED EMSCRIPTEN )
 
 message( ".. Don't worry about any messages above about missing headers or failed tests, as long as\n    you see 'Configuring done' below. Headers and features vary by compiler." )
